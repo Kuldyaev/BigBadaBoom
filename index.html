@@ -46,28 +46,62 @@
 	const Player = function(x) {
 	  this.x = x;
 	};
-	Player.prototype.update = function(dt) {
-
-	};
+	
 	Player.prototype.render = function() {
-		ctx.clearRect(this.x-15, 0, this.x+15, 53);
-			ctx.beginPath();
-			ctx.moveTo(this.x,50);
-			ctx.lineTo(this.x-8,0);
-			ctx.lineTo(this.x+8,0);
-			ctx.fill();
+		ctx.clearRect(0, 0, 640, 512);
+		ctx.beginPath();
+		ctx.moveTo(this.x,50);
+		ctx.lineTo(this.x-8,0);
+		ctx.lineTo(this.x+8,0);
+		ctx.fillStyle = 'black';
+		ctx.fill();
 	};
 	Player.prototype.handleInput = function (keyPress) {
-		if (keyPress === 'left' && this.x > 8) {
+		if (keyPress === 'left' && this.x >15) {
 			this.x -= 5;
 		};
-		if (keyPress === 'right' && this.x < 632) {
+		if (keyPress === 'right' && this.x < 625) {
 			this.x += 5;
 		};
 	};	
 	
 	const player = new Player(300);
 	
+	const Enemy = function (x, y, radius, color, speed) {
+
+		this.x = x;
+		this.y = y;
+		this.speed = speed;
+		this.color = color;
+		this.radius = radius;
+    };
+	
+	Enemy.prototype.render = function() {
+		ctx.beginPath();
+		ctx.arc(this.x,this.y,this.radius,0,Math.PI*2,true); 
+		ctx.fillStyle = this.color;
+		ctx.fill();
+    };
+	
+	Enemy.prototype.update = function(dt) {
+		
+		this.y -= this.speed * dt;
+		console.log('test');
+	};
+
+	
+	const allEnemies = [];
+
+	const enemyData = [
+			[63, 63, 52, 'blue', 10],
+			[125, 250, 100, 'red', 20],
+			[452, 400, 30, 'yellow', 5]
+	];
+	enemyData.forEach(function (X) {
+		enemy = new Enemy(X[0], X[1], X[2],  X[3], X[4]);
+		allEnemies.push(enemy);
+	});
+	console.log(allEnemies);
 	document.addEventListener('keydown', function(e) {
 		const allowedKeys = {
 			37: 'left',
@@ -77,7 +111,7 @@
 	});
 
 	
-		var Engine = (function(global) {
+	var Engine = (function(global) {
 			var doc = global.document,
 				win = global.window,
 				canvas = doc.createElement('canvas'),
@@ -185,9 +219,7 @@
 					divBottomItemValue = doc.createElement('div'),
 					divBottomItemTitleText = doc.createElement('p'),
 					divBottomItemValueText = doc.createElement('h3');
-					
 				divBottomItem.className = 'bottomItem';
-				
 				divBottomItem.style.width = '160px';
 				divBottomItem.style.height = '64px';
 				divBottomItemTitle.style.width = '160px';
@@ -196,7 +228,6 @@
 				divBottomItemValue.style.height = '40px';
 				divBottomItemTitleText.style.margin = '0px';
 				divBottomItemValueText.style.margin = '0px';
-			
 				divBottomItem.id = i ;
 				divBottom.appendChild(divBottomItem);
 				divBottomItem.appendChild(divBottomItemTitle);
@@ -209,14 +240,8 @@
 				divBottomItemValueText.textContent = initData[1][i];
 				divBottomItemTitle.style.textAlign = 'center';
 				divBottomItemValue.style.textAlign = 'center';
-				
 				butReset.onclick = reset;
-				
-				
 			}
-			
-			
-	
    
 		function main() {
 			var now = Date.now(),
@@ -252,13 +277,18 @@
 
 		function update(dt, gt) {
 			updateClock(gt);	
-			//updateEntities(dt);
+			allEnemies.forEach(function(enemy) {
+				enemy.update(dt);
+			});
 			// checkCollisions();
 
 		}
 		
 		function render() {
-			 player.render();
+			player.render();
+			allEnemies.forEach(function(enemy) {
+				enemy.render();
+			});
 		}
 		
 		
