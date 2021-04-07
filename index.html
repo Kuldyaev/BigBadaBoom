@@ -36,12 +36,47 @@
 		#firstPopTitle{height: 10%; width: 100%;}
 		#firstPopText{height: 65%; width: 100%;}
 		#firstPopButton{height: 25%; width: 100%;}
+				
 	</style>
 </head>
 
 <body style="background: #e9e9e9;">
     <script type="text/javascript">
-		 
+	
+	const Player = function(x) {
+	  this.x = x;
+	};
+	Player.prototype.update = function(dt) {
+
+	};
+	Player.prototype.render = function() {
+		ctx.clearRect(this.x-15, 0, this.x+15, 53);
+			ctx.beginPath();
+			ctx.moveTo(this.x,50);
+			ctx.lineTo(this.x-8,0);
+			ctx.lineTo(this.x+8,0);
+			ctx.fill();
+	};
+	Player.prototype.handleInput = function (keyPress) {
+		if (keyPress === 'left' && this.x > 8) {
+			this.x -= 5;
+		};
+		if (keyPress === 'right' && this.x < 632) {
+			this.x += 5;
+		};
+	};	
+	
+	const player = new Player(300);
+	
+	document.addEventListener('keydown', function(e) {
+		const allowedKeys = {
+			37: 'left',
+			39: 'right',
+		};
+		player.handleInput(allowedKeys[e.keyCode]);
+	});
+
+	
 		var Engine = (function(global) {
 			var doc = global.document,
 				win = global.window,
@@ -176,7 +211,11 @@
 				divBottomItemValue.style.textAlign = 'center';
 				
 				butReset.onclick = reset;
+				
+				
 			}
+			
+			
 	
    
 		function main() {
@@ -185,13 +224,14 @@
 				gt = (now - startTime) /1000.0;
 
 			update(dt, gt);
-		//	render();
+			render();
 			lastTime = now;
 			
-			if ( ((now-startTime)/1000)<60 ){
+			if ( ((now-startTime)/1000)<59 ){
 					win.requestAnimationFrame(main);
 			}else{
-				alert("Закончили!");
+				finishPopUp();
+		
 			}
 
 		}
@@ -215,6 +255,10 @@
 			//updateEntities(dt);
 			// checkCollisions();
 
+		}
+		
+		function render() {
+			 player.render();
 		}
 		
 		
@@ -247,6 +291,7 @@
 			for (var i = 0; i < 8; i++) {
 				const infoPopTextContext = document.createElement('h5');
 				infoPopTextContext.id = 10+i ;
+				infoPopTextContext.className = 'instruction' ;
 				infoPopTextContext.textContent = startText[i];
 				infoPopTextContext.style.marginTop = '5px';
 				infoPopTextContext.style.marginBottom = '5px';
@@ -267,8 +312,56 @@
 			reset();
 			main();
 		}
-
 		
+		function finishPopUp() {
+			const fonbox =  document.createElement('div');
+			fonbox.id = 'layer3';
+			doc.body.appendChild(fonbox);
+			const fon = document.createElement('div');
+			fonbox.appendChild(fon);
+			fon.id = 'fon';
+			const popbox =  document.createElement('div');
+			popbox.id = 'layer4';
+			popbox.className = 'popup';
+			doc.body.appendChild(popbox);
+			const infoPopTitle = document.createElement('div');
+			const infoPopText = document.createElement('div');
+			const infoPopTitleContext = document.createElement('h3');
+			const infoPopButton = document.createElement('div');
+			infoPopTitle.id = 'firstPopTitle';
+			infoPopText.id = 'firstPopText';
+			infoPopButton.id = 'firstPopButton';
+			popbox.appendChild(infoPopTitle);
+			popbox.appendChild(infoPopText);
+			popbox.appendChild(infoPopButton);
+			infoPopTitle.appendChild(infoPopTitleContext);
+			infoPopTitleContext.style.marginTop = '45px';
+			infoPopTitleContext.textContent = "Поздравляем!";
+			
+			
+			
+			const infoPopTextContext = document.createElement('h5');
+			infoPopTextContext.id = 11 ;
+			infoPopTextContext.textContent = "Вы поймали XXXX шариков";
+			infoPopTextContext.style.marginTop = '5px';
+			infoPopTextContext.style.marginBottom = '5px';
+			infoPopText.appendChild(infoPopTextContext);
+			
+			
+			const buttonStart = document.createElement('button');
+			buttonStart.textContent = 'RESTART';
+			buttonStart.onclick = finishPopUpClose;
+			infoPopButton.appendChild(buttonStart);
+		}
+
+		function finishPopUpClose() {
+			const fonbox =  document.getElementById('layer3');
+			const popbox =  document.getElementById('layer4');
+			fonbox.remove();
+			popbox.remove();
+			reset();
+			main();
+		}
 		
 		function updateClock(gt) {
 			if (gt >  (60 - initData[1][0])){
@@ -283,7 +376,6 @@
 		}
 
 		
-		
 
 		function reset() {
 			initData[1][0] = 60;
@@ -294,14 +386,18 @@
 			document.getElementById(8).className = 'oldclass';
 			startTime = Date.now();
 			lastTime = Date.now();
-			
+			ctx.clearRect(0, 0, 640, 512);
 		}
+		
 
+		
+		
+		
     global.ctx = ctx;
 	
 	init();
-	
-	})(this);
+
+})(this);
 </script>
 </body>
 </html>
