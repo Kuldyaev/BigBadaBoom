@@ -87,10 +87,14 @@
 	Enemy.prototype.update = function(dt, wind) {
 		this.y -= this.speed * dt;
 		
-		if((this.x-this.radius)>0 && (this.x+this.radius)<640){this.x += (wind-3)/10;}
+		if((this.x-this.radius)>0 && (this.x+this.radius)<640){
+			if(wind>3){this.x += ((wind-3)/10)*(1-this.x/650);}
+			if(wind<3){this.x += ((wind-3)/10)*(this.x/650);}
+			
+		}
 		else {
-			if((this.x-this.radius)<=0 && wind>3){this.x += (wind-3)/10;}
-			if((this.x-this.radius)>=640 && wind<3){this.x += (wind-3)/10;}
+			if((this.x-this.radius)<=0 && wind>3){this.x += ((wind-3)/10)*(1-this.x/650);}
+			if((this.x-this.radius)>=640 && wind<3){this.x += (((wind-3)/10)*(this.x/650));}
 		}
 		
 		if ((Math.sqrt(Math.pow(this.x-player.x, 2)+Math.pow(this.y-50, 2)))<=this.radius) {
@@ -104,11 +108,11 @@
 	const allEnemies = [];
 
 	const enemyData = [
-			[63, 463, 52, 'blue', 17],
-			[125, 250, 100, 'red', 28],
-			[452, 170, 30, 'yellow', 15],
-			[512, 400, 35, 'green', 13],
-			[352, 425, 25, 'white', 23]
+			[63, 463, 52, 'blue', 27],
+			[125, 250, 100, 'red', 38],
+			[452, 170, 30, 'yellow', 45],
+			[512, 400, 35, 'green', 23],
+			[352, 425, 25, 'white', 33]
 	];
 	enemyData.forEach(function (X) {
 		enemy = new Enemy(X[0], X[1], X[2],  X[3], X[4]);
@@ -451,6 +455,7 @@
 			var windCurrentValue = document.getElementById(11).innerHTML;
 			if (windCurrentValue != initData[1][3]){
 				document.getElementById(11).textContent = windSymbols[initData[1][3]];
+				console.log(initData[1][3]);
 				
 			}
 		}
@@ -458,7 +463,7 @@
 		function updateScore() {
 			if(document.getElementById(9).innerHTML != score[0]){
 				document.getElementById(9).textContent = score[0];
-				initData[1][3]+=1;
+				initData[1][1]+=1;
 			}
 		}
 
