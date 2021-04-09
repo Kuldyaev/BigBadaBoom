@@ -55,25 +55,24 @@
 		ctx.fillStyle = 'black';
 		ctx.fill();
 	};
+	
 	Player.prototype.handleInput = function (keyPress) {
 		if (keyPress === 'left' && this.x >15) {
-			this.x -= 5;
+			this.x -= 10;
 		};
 		if (keyPress === 'right' && this.x < 625) {
-			this.x += 5;
+			this.x += 10;
 		};
 	};	
 	
 	const player = new Player(300);
 	
 	const Enemy = function (x, y, radius, color, speed) {
-
 		this.x = x;
 		this.y = y;
 		this.speed = speed;
 		this.color = color;
 		this.radius = radius;
-		
     };
 	
 	Enemy.prototype.render = function() {
@@ -84,8 +83,8 @@
     };
 	var score = [0,0];
 	
-	Enemy.prototype.update = function(dt, wind) {
-		this.y -= this.speed * dt;
+	Enemy.prototype.update = function(dt, wind, gt) {
+		this.y -= this.speed * dt + 0.01*gt;
 		
 		if((this.x-this.radius)>0 && (this.x+this.radius)<640){
 			if(wind>3){this.x += ((wind-3)/10)*(1-this.x/650);}
@@ -98,10 +97,20 @@
 		}
 		
 		if ((Math.sqrt(Math.pow(this.x-player.x, 2)+Math.pow(this.y-50, 2)))<=this.radius) {
-			this.x = 202;
-			this.y = 600;
 			score[0]+=1;
+			this.radius = 20+ Math.floor(Math.random() * 20);
+			this.x = this.radius + Math.floor(Math.random() * (620 - 2*this.radius));
+			this.y = 515 + this.radius;
+			this.speed =  20 + Math.floor(Math.random() * 20  + 0.3*gt);
 		};
+		
+		if ( -this.y > this.radius){
+			score[1]+=1;
+			this.radius = 20+ Math.floor(Math.random() * 20);
+			this.x = this.radius + Math.floor(Math.random() * (620 - 2*this.radius));
+			this.y = 515 + this.radius;
+			this.speed =  25 + Math.floor(Math.random() * 20 + 0.1*gt );
+		}
 	};
 
 	
@@ -112,7 +121,11 @@
 			[125, 250, 100, 'red', 38],
 			[452, 170, 30, 'yellow', 45],
 			[512, 400, 35, 'green', 23],
-			[352, 425, 25, 'white', 33]
+			[352, 425, 25, 'white', 33],
+			[452, 600, 25, 'teal', 30],
+			[500, 555, 25, 'aqua', 40],
+			[102, 625, 25, 'lime', 35],
+			[392, 650, 25, 'fuchsia', 23],
 	];
 	enemyData.forEach(function (X) {
 		enemy = new Enemy(X[0], X[1], X[2],  X[3], X[4]);
@@ -270,17 +283,11 @@
 				gt = (now - startTime) /1000.0;
 
 			update(dt, gt, initData[1][3]);
-			
 			render();
 			lastTime = now;
-			
 			if ( ((now-startTime)/1000)<59 ){
 					win.requestAnimationFrame(main);
-			}else{
-				finishPopUp();
-		
-			}
-
+			}else{finishPopUp()}
 		}
 
   
@@ -290,11 +297,6 @@
 			lastTime = Date.now();
 			firstPopUp();
 			document.getElementById(11).textContent = windSymbols[initData[1][3]];
-			
-			
-		//	main();
-			
-			
 		}
 
 		function update(dt, gt, wind) {
@@ -302,10 +304,8 @@
 			updateWind(gt);
 			updateScore();
 			allEnemies.forEach(function(enemy) {
-				enemy.update(dt, wind);
+				enemy.update(dt, wind, gt);
 			});
-			// checkCollisions();
-
 		}
 		
 		function render() {
@@ -391,9 +391,6 @@
 			infoPopTitle.appendChild(infoPopTitleContext);
 			infoPopTitleContext.style.marginTop = '45px';
 			infoPopTitleContext.textContent = "Поздравляем!";
-			
-			
-			
 			const infoPopTextContext = document.createElement('h5');
 			infoPopTextContext.id = 11 ;
 			var text111 = "Вы поймали " + score[0] + " шариков"
@@ -401,8 +398,13 @@
 			infoPopTextContext.style.marginTop = '5px';
 			infoPopTextContext.style.marginBottom = '5px';
 			infoPopText.appendChild(infoPopTextContext);
-			
-			
+			const infoPopTextContext2 = document.createElement('h5');
+			infoPopTextContext2.id = 19 ;
+			var text111 = "упустили " + score[1] + " шариков"
+			infoPopTextContext2.textContent = text111;
+			infoPopTextContext2.style.marginTop = '5px';
+			infoPopTextContext2.style.marginBottom = '5px';
+			infoPopText.appendChild(infoPopTextContext2);
 			const buttonStart = document.createElement('button');
 			buttonStart.textContent = 'RESTART';
 			buttonStart.onclick = finishPopUpClose;
@@ -426,7 +428,6 @@
 					finalCountdown = true;
 					document.getElementById(8).className = 'newclass';
 				}
-				
 			}
 		}
 		
@@ -441,13 +442,12 @@
 					} else {lastWindTime+=1}
 				}
 				else {
-					if(initData[1][3]< 7){
+					if(initData[1][3]< 6){
 						initData[1][3] += 1;
 						lastWindTime = gt;
 						showWindChange();
 					} else {lastWindTime+=1}
 				}
-				
 			}
 		}
 		
@@ -455,8 +455,6 @@
 			var windCurrentValue = document.getElementById(11).innerHTML;
 			if (windCurrentValue != initData[1][3]){
 				document.getElementById(11).textContent = windSymbols[initData[1][3]];
-				console.log(initData[1][3]);
-				
 			}
 		}
 
@@ -465,6 +463,10 @@
 				document.getElementById(9).textContent = score[0];
 				initData[1][1]+=1;
 			}
+			if(document.getElementById(10).innerHTML != score[1]){
+				document.getElementById(10).textContent = score[1];
+				initData[1][2]+=1;
+			}
 		}
 
 		function reset() {
@@ -472,6 +474,8 @@
 			initData[1][1] = 0;
 			initData[1][2] = 0;
 			initData[1][3] = 3;
+			score[0] = 0;
+			score[1] = 0;
 			finalCountdown = false;
 			document.getElementById(8).className = 'oldclass';
 			startTime = Date.now();
@@ -479,16 +483,12 @@
 			lastWindTime = 0;
 			ctx.clearRect(0, 0, 640, 512);
 		}
-		
 
-		
-		
-		
     global.ctx = ctx;
 	
 	init();
 
-})(this);
+	})(this);
 </script>
 </body>
 </html>
