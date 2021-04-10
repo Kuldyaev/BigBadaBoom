@@ -21,11 +21,6 @@
 			background-color: #708090;
 			opacity: 0.95;
 		}	
-		#finish{height: 50px; width: 25%; flex: left;}
-		#finish{height: 50px; width: 75%; flex: right;}
-		#cdeck{height: 78%;}
-		#restart{ height: 30%;}
-		#decks{height: 100%;}
 		#fon{
 		  width: 100%;
 		  height: 100%;
@@ -35,25 +30,36 @@
 		#firstPopTitle{height: 10%; width: 100%;}
 		#firstPopText{height: 65%; width: 100%;}
 		#firstPopButton{height: 25%; width: 100%;}
-				
 	</style>
 </head>
 
 <body style="background: #e9e9e9;">
     <script type="text/javascript">
 	
-	const Player = function(x) {
+	const Player = function(x, lastX) {
 	  this.x = x;
+	  this.lastX =lastX;
 	};
 	
-	Player.prototype.render = function() {
+	Player.prototype.render = function(gt) {
 		ctx.clearRect(0, 0, 640, 512);
-		ctx.beginPath();
-		ctx.moveTo(this.x,50);
-		ctx.lineTo(this.x-8,0);
-		ctx.lineTo(this.x+8,0);
-		ctx.fillStyle = 'black';
-		ctx.fill();
+		if(gt<61){
+			this.lastX=this.x;
+			ctx.beginPath();
+			ctx.moveTo(this.x,50);
+			ctx.lineTo(this.x-8,0);
+			ctx.lineTo(this.x+8,0);
+			ctx.fillStyle = 'black';
+			ctx.fill();
+		}
+		else{
+			ctx.beginPath();
+			ctx.moveTo(this.lastX,50);
+			ctx.lineTo(this.lastX-8,0);
+			ctx.lineTo(this.lastX+8,0);
+			ctx.fillStyle = 'black';
+			ctx.fill();
+		}
 	};
 	
 	Player.prototype.handleInput = function (keyPress) {
@@ -65,14 +71,15 @@
 		};
 	};	
 	
-	const player = new Player(300);
+	const player = new Player(300, 300);
 	
-	const Enemy = function (x, y, radius, color, speed) {
+	const Enemy = function (x, y, radius, color, speed, status) {
 		this.x = x;
 		this.y = y;
 		this.speed = speed;
 		this.color = color;
 		this.radius = radius;
+		this.status = status;
     };
 	
 	Enemy.prototype.render = function() {
@@ -85,50 +92,50 @@
 	
 	Enemy.prototype.update = function(dt, wind, gt) {
 		this.y -= this.speed * dt + 0.01*gt;
-		
 		if((this.x-this.radius)>0 && (this.x+this.radius)<640){
 			if(wind>3){this.x += ((wind-3)/10)*(1-this.x/650);}
-			if(wind<3){this.x += ((wind-3)/10)*(this.x/650);}
-			
+			if(wind<3){this.x += ((wind-3)/10)*(this.x/650);}	
 		}
 		else {
 			if((this.x-this.radius)<=0 && wind>3){this.x += ((wind-3)/10)*(1-this.x/650);}
 			if((this.x-this.radius)>=640 && wind<3){this.x += (((wind-3)/10)*(this.x/650));}
 		}
-		
-		if ((Math.sqrt(Math.pow(this.x-player.x, 2)+Math.pow(this.y-50, 2)))<=this.radius) {
-			score[0]+=1;
-			this.radius = 20+ Math.floor(Math.random() * 20);
-			this.x = this.radius + Math.floor(Math.random() * (620 - 2*this.radius));
-			this.y = 515 + this.radius;
-			this.speed =  20 + Math.floor(Math.random() * 20  + 0.3*gt);
-		};
-		
-		if ( -this.y > this.radius){
-			score[1]+=1;
-			this.radius = 20+ Math.floor(Math.random() * 20);
-			this.x = this.radius + Math.floor(Math.random() * (620 - 2*this.radius));
-			this.y = 515 + this.radius;
-			this.speed =  25 + Math.floor(Math.random() * 20 + 0.1*gt );
+		if(gt<61){
+			if ((Math.sqrt(Math.pow(this.x-player.x, 2)+Math.pow(this.y-50, 2)))<=this.radius) {
+				score[0]+=1;
+				this.radius = 20+ Math.floor(Math.random() * 20);
+				this.x = this.radius + Math.floor(Math.random() * (620 - 2*this.radius));
+				this.y = 515 + this.radius;
+				this.speed =  20 + Math.floor(Math.random() * 20  + 0.3*gt);
+			};
+			if ( -this.y > this.radius){
+				score[1]+=1;
+				this.radius = 20+ Math.floor(Math.random() * 20);
+				this.x = this.radius + Math.floor(Math.random() * (620 - 2*this.radius));
+				this.y = 515 + this.radius;
+				this.speed =  25 + Math.floor(Math.random() * 20 + 0.1*gt );
+			}
+		}
+		else{
+			if ( -this.y > this.radius +1){this.status = 0}
 		}
 	};
-
 	
 	const allEnemies = [];
 
 	const enemyData = [
-			[63, 463, 52, 'blue', 27],
-			[125, 250, 100, 'red', 38],
-			[452, 170, 30, 'yellow', 45],
-			[512, 400, 35, 'green', 23],
-			[352, 425, 25, 'white', 33],
-			[452, 600, 25, 'teal', 30],
-			[500, 555, 25, 'aqua', 40],
-			[102, 625, 25, 'lime', 35],
-			[392, 650, 25, 'fuchsia', 23],
+			[63, 463, 52, 'blue', 27,1],
+			[125, 250, 100, 'red', 38,1],
+			[452, 170, 30, 'yellow', 45,1],
+			[512, 400, 35, 'green', 23,1],
+			[352, 425, 25, 'white', 33,1],
+			[452, 600, 25, 'teal', 30,1],
+			[500, 555, 25, 'aqua', 40,1],
+			[102, 625, 25, 'lime', 35,1],
+			[392, 650, 25, 'fuchsia', 23,1],
 	];
 	enemyData.forEach(function (X) {
-		enemy = new Enemy(X[0], X[1], X[2],  X[3], X[4]);
+		enemy = new Enemy(X[0], X[1], X[2],  X[3], X[4], X[5]);
 		allEnemies.push(enemy);
 	});
 	document.addEventListener('keydown', function(e) {
@@ -138,7 +145,6 @@
 		};
 		player.handleInput(allowedKeys[e.keyCode]);
 	});
-		
 	
 	var Engine = (function(global) {
 			var doc = global.document,
@@ -179,8 +185,6 @@
 					"Затем выводится сообщение о количестве пропущенных и лопнувших шаров."
 				];		
 				marginGlobal = String((document.documentElement.clientWidth - 640)/2) + 'px';
-				
-				
 			divMain.className = 'main';
 			divMain.id = 'layer1';
 			divTop.className = 'header';
@@ -264,13 +268,15 @@
 			var now = Date.now(),
 				dt = (now - lastTime) / 1000.0,
 				gt = (now - startTime) /1000.0;
-
+				stat = 1;
 			update(dt, gt, initData[1][3]);
-			render();
+			render(gt);
 			lastTime = now;
-			if ( ((now-startTime)/1000)<59 ){
-					win.requestAnimationFrame(main);
-			}else{finishPopUp()}
+			checkStatus(gt,stat);
+			if ( stat>0 ){
+				win.requestAnimationFrame(main);
+			}
+			if(stat==0){finishPopUp()}
 		}
 
  		function init() {
@@ -290,8 +296,8 @@
 			});
 		}
 		
-		function render() {
-			player.render();
+		function render(gt) {
+			player.render(gt);
 			allEnemies.forEach(function(enemy) {
 				enemy.render();
 			});
@@ -422,7 +428,7 @@
 		}
 		
 		function updateClock(gt) {
-			if (gt >  (60 - initData[1][0])){
+			if (gt >  (60 - initData[1][0]) && gt<60){
 				if( gt != 60){initData[1][0] -= 1;}
 				document.getElementById(8).textContent = initData[1][0];
 				if( gt > 49 && !finalCountdown){
@@ -469,6 +475,13 @@
 				initData[1][2]+=1;
 			}
 		}
+		
+		function checkStatus(gt) {
+			if (gt>60){
+				stat=0;
+				for (var i = 0; i < 9; i++){stat+=allEnemies[i].status;}
+			}
+		}
 
 		function reset() {
 			initData[1][0] = 60;
@@ -490,6 +503,6 @@
 	init();
 
 	})(this);
-</script>
+	</script>
 </body>
 </html>
